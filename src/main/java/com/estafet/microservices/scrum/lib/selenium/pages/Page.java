@@ -81,7 +81,7 @@ public abstract class Page {
 				throw new RuntimeException(e);
 			}
 		}
-		return System.getenv("application.url");
+		return prop.getProperty("application.url");
 	}
 
 	public abstract String title();
