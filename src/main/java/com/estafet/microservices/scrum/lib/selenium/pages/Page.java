@@ -1,11 +1,14 @@
 package com.estafet.microservices.scrum.lib.selenium.pages;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -42,7 +45,7 @@ public abstract class Page {
 
 	public Page(String... params) {
 		try {
-			this.url = new URL(System.getenv("BASIC_UI_URI") + resolveUri(params));
+			this.url = new URL(getURI() + resolveUri(params));
 			Capabilities capabilities = DesiredCapabilities.htmlUnitWithJs();
 			driver = new HtmlUnitDriver(capabilities);
 			driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
@@ -56,17 +59,42 @@ public abstract class Page {
 		}
 	}
 
+	private String getURI() {
+		Properties prop = new Properties();
+		InputStream inputStream = null;
+		String propFileName = "selenium.properties";
+		try {
+			inputStream = getClass().getClassLoader().getResourceAsStream(propFileName);
+			if (inputStream != null) {
+				prop.load(inputStream);
+			} else {
+				throw new RuntimeException("property file '" + propFileName + "' not found in the classpath");
+			}
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		} finally {
+			try {
+				if (inputStream != null) {
+					inputStream.close();	
+				}
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		return System.getenv("application.url");
+	}
+
 	public abstract String title();
 	
 	public boolean isLoaded(String... params) {
-		String compare = System.getenv("BASIC_UI_URI") + resolveUri(params);
+		String compare = getURI() + resolveUri(params);
 		return compare.equals(driver.getCurrentUrl()) && driver.getTitle().equals(title());
 	}
 
 	public boolean isLoaded() {
 		String currentUrl = driver.getCurrentUrl();
 		if (uri().contains("{1}")) {
-			String compare = escapeRegExChars(System.getenv("BASIC_UI_URI")) + escapeRegExChars(uri().replaceAll("\\{\\d+\\}", "REPLACE")).replaceAll("REPLACE", "\\\\d+");
+			String compare = escapeRegExChars(getURI()) + escapeRegExChars(uri().replaceAll("\\{\\d+\\}", "REPLACE")).replaceAll("REPLACE", "\\\\d+");
 			return currentUrl.matches(compare) && driver.getTitle() != null && driver.getTitle().equals(title());
 		} else {
 			return url.toString().equals(currentUrl)
@@ -143,7 +171,7 @@ public abstract class Page {
 
 	
 	public String getCurrentURI() {
-		return driver.getCurrentUrl().substring(System.getenv("BASIC_UI_URI").length());
+		return driver.getCurrentUrl().substring(getURI().length());
 	}
 
 }
