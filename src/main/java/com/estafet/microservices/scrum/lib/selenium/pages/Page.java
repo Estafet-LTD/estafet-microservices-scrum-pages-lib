@@ -21,13 +21,15 @@ import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.PageFactory;
 
 public abstract class Page {
-	
+
 	private final WebDriver driver;
 	private final URL url;
-	
+
+	private Properties prop = null;
+
 	private final String regExSpecialChars = ":/<([{\\^-=$!|]})?*+.>";
-	private final String regExSpecialCharsRE = regExSpecialChars.replaceAll( ".", "\\\\$0");
-	private final Pattern reCharsREP = Pattern.compile( "[" + regExSpecialCharsRE + "]");
+	private final String regExSpecialCharsRE = regExSpecialChars.replaceAll(".", "\\\\$0");
+	private final Pattern reCharsREP = Pattern.compile("[" + regExSpecialCharsRE + "]");
 
 	public Page(WebDriver driver) {
 		this.driver = driver;
@@ -60,32 +62,34 @@ public abstract class Page {
 	}
 
 	private String getURI() {
-		Properties prop = new Properties();
-		InputStream inputStream = null;
-		String propFileName = "selenium.properties";
-		try {
-			inputStream = getClass().getClassLoader().getResourceAsStream(propFileName);
-			if (inputStream != null) {
-				prop.load(inputStream);
-			} else {
-				throw new RuntimeException("property file '" + propFileName + "' not found in the classpath");
-			}
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		} finally {
+		if (prop == null) {
+			prop = new Properties();
+			InputStream inputStream = null;
+			String propFileName = "selenium.properties";
 			try {
+				inputStream = getClass().getClassLoader().getResourceAsStream(propFileName);
 				if (inputStream != null) {
-					inputStream.close();	
+					prop.load(inputStream);
+				} else {
+					throw new RuntimeException("property file '" + propFileName + "' not found in the classpath");
 				}
 			} catch (IOException e) {
 				throw new RuntimeException(e);
+			} finally {
+				try {
+					if (inputStream != null) {
+						inputStream.close();
+					}
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
 			}
 		}
 		return prop.getProperty("application.url");
 	}
 
 	public abstract String title();
-	
+
 	public boolean isLoaded(String... params) {
 		String compare = getURI() + resolveUri(params);
 		return compare.equals(driver.getCurrentUrl()) && driver.getTitle().equals(title());
@@ -94,19 +98,19 @@ public abstract class Page {
 	public boolean isLoaded() {
 		String currentUrl = driver.getCurrentUrl();
 		if (uri().contains("{1}")) {
-			String compare = escapeRegExChars(getURI()) + escapeRegExChars(uri().replaceAll("\\{\\d+\\}", "REPLACE")).replaceAll("REPLACE", "\\\\d+");
+			String compare = escapeRegExChars(getURI())
+					+ escapeRegExChars(uri().replaceAll("\\{\\d+\\}", "REPLACE")).replaceAll("REPLACE", "\\\\d+");
 			return currentUrl.matches(compare) && driver.getTitle() != null && driver.getTitle().equals(title());
 		} else {
-			return url.toString().equals(currentUrl)
-					&& driver.getTitle().equals(title());
+			return url.toString().equals(currentUrl) && driver.getTitle().equals(title());
 		}
 	}
-	
+
 	private String escapeRegExChars(String s) {
-	    Matcher m = reCharsREP.matcher( s);
-	    return m.replaceAll( "\\\\$0");
+		Matcher m = reCharsREP.matcher(s);
+		return m.replaceAll("\\\\$0");
 	}
-	
+
 	public void close() {
 		driver.close();
 	}
@@ -115,12 +119,12 @@ public abstract class Page {
 		element.clear();
 		element.sendKeys(value);
 	}
-	
+
 	protected void setField(WebElement element, Integer value) {
 		element.clear();
 		element.sendKeys(Integer.toString(value));
 	}
-	
+
 	protected <T extends Page> T click(WebElement element, Class<T> clazz) {
 		try {
 			element.click();
@@ -156,7 +160,7 @@ public abstract class Page {
 	protected URL getUrl() {
 		return url;
 	}
-	
+
 	private String resolveUri(String... params) {
 		String uri = uri();
 		int index = 1;
@@ -169,7 +173,6 @@ public abstract class Page {
 
 	public abstract String uri();
 
-	
 	public String getCurrentURI() {
 		return driver.getCurrentUrl().substring(getURI().length());
 	}
