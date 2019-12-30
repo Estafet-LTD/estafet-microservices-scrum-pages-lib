@@ -1,14 +1,11 @@
 package com.estafet.microservices.scrum.lib.selenium.pages;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,12 +17,12 @@ import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.PageFactory;
 
+import com.estafet.microservices.scrum.lib.commons.properties.PropertyUtils;
+
 public abstract class Page {
 
 	private final WebDriver driver;
 	private final URL url;
-
-	private Properties prop = null;
 
 	private final String regExSpecialChars = ":/<([{\\^-=$!|]})?*+.>";
 	private final String regExSpecialCharsRE = regExSpecialChars.replaceAll(".", "\\\\$0");
@@ -62,30 +59,7 @@ public abstract class Page {
 	}
 
 	private String getURI() {
-		if (prop == null) {
-			prop = new Properties();
-			InputStream inputStream = null;
-			String propFileName = "selenium.properties";
-			try {
-				inputStream = getClass().getClassLoader().getResourceAsStream(propFileName);
-				if (inputStream != null) {
-					prop.load(inputStream);
-				} else {
-					throw new RuntimeException("property file '" + propFileName + "' not found in the classpath");
-				}
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			} finally {
-				try {
-					if (inputStream != null) {
-						inputStream.close();
-					}
-				} catch (IOException e) {
-					throw new RuntimeException(e);
-				}
-			}
-		}
-		return prop.getProperty("application.url");
+		return PropertyUtils.instance().getProperty("application.url");
 	}
 
 	public abstract String title();

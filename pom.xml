@@ -53,6 +53,11 @@
 			<artifactId>selenium-java</artifactId>
 			<version>2.52.0</version>
 		</dependency>
+		<dependency>
+			<groupId>com.estafet.microservices.scrum</groupId>
+			<artifactId>microservices-scrum-commons-lib</artifactId>
+			<version>1.0.6</version>
+		</dependency>		
 	</dependencies>
 
 	<distributionManagement>
