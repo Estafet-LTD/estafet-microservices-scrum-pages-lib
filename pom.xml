@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.estafet.microservices.scrum</groupId>
 	<artifactId>microservices-scrum-pages-lib</artifactId>
-	<version>1.0.6</version>
+	<version>1.0.7-SNAPSHOT</version>
 
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
@@ -75,7 +75,7 @@
 		<connection>scm:git:https://github.com/Estafet-LTD/estafet-microservices-scrum-pages-lib.git</connection>
 		<developerConnection>scm:git:https://github.com/Estafet-LTD/estafet-microservices-scrum-pages-lib.git</developerConnection>
 		<url>https://github.com/Estafet-LTD/estafet-microservices-scrum-pages-lib</url>
-		<tag>microservices-scrum-pages-lib-1.0.6</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 	<name>Libraries for Selenium Page Objects</name>
